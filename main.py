@@ -9,15 +9,9 @@ from string import digits
 digits = frozenset(digits) # we don't need to change digits, and this should make things ever-so-slightly faster
 owners = [401849772157435905, 876488885419520020] # Owner account IDs
 bottoken = open("token.txt","r").readline()
-print(bottoken.strip())
-leaderboardfailsafe = 0
 membercount=0
 totalmessages=0 # total number of messages since bot turned on
-data=open('httplist.py','r+').read()
-exec(data)
-leaderboard = []
-xp = []
-timestamps = []
+import httplist
 
 class TimeoutException(Exception):   # Custom exception class
     print("bot timed out")
@@ -30,18 +24,34 @@ signal.signal(signal.SIGALRM, timeout_handler)
 
 
 
-key=os.getenv('key')
-wkey=os.getenv('wkey')
+# key=os.getenv('key')
+# wkey=os.getenv('wkey')
+
+class SurvivBot(commands.Bot):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.leaderboard = {}
+        self.leaderboard_loaded = False
+    
+    async def setup_hook(self):
+        print('Loading XP data')
+        with open('board.txt') as f:
+            leaderboard = [int(i.strip()) for i in f.read().splitlines()]
+        with open('xp.txt') as f:
+            xp = [int(i.strip()) for i in f.read().splitlines()]
+        with open('time.txt') as f:
+            timestamps = [int(i.strip()) for i in f.read().splitlines()]
+        assert len(leaderboard) == len(xp) == len(timestamps)
+        for i in range(len(leaderboard)):
+            self.leaderboard[leaderboard[i]] = {xp: xp[i], time: timestamps[i]}
+        self.leaderboard_loaded = True
 
 intents = discord.Intents.default()
 intents.members = True
 
-client = discord.Client() #declaring what the client is.
+client = SurvivBot(command_prefix='$', intents=intents, help_command=None)
 
-client = commands.Bot(command_prefix = '$', intents=intents)#Makes the bot prefix.
-client.remove_command('help')#Removes the auto help command as it can be buggy.
-
-    # https://discord.com/api/oauth2/authorize?client_id=1079242361491693658&permissions=8&scope=applications.commands%20bot
+# https://discord.com/api/oauth2/authorize?client_id=1079242361491693658&permissions=8&scope=applications.commands%20bot
 
 @client.command()
 async def explain(ctx):
@@ -54,9 +64,6 @@ async def explain(ctx):
 
 @client.event
 async def on_ready():
-    global timestamps
-    global leaderboard
-    global xp
     print("========")
     print("current UNIX time is {time}.".format(time=int(time.time())))
     print("========")
@@ -64,34 +71,11 @@ async def on_ready():
     print(client.user.name)
     print(client.user.id)
     print('========')
-    print("reloading XP, timestamps, and boards")
-    with open("board.txt") as file:
-        leaderboard = file.read().splitlines()
-        leaderboard = [int(i) for i in leaderboard]
-        file.close()
-    with open("xp.txt") as file:
-        xp = file.read().splitlines()
-        xp = [int(i) for i in xp]
-        file.close()
-    with open("time.txt") as file:
-        timestamps = file.read().splitlines()
-        timestamps = [int(i) for i in timestamps]
-        file.close()
-    print("done")
-    print("========")
-    #print(leaderboard)
-    #print(xp)
-    #print(timestamps)
 
 
 @client.event
 async def on_member_join(member):
-    global membercount
-    leaderboard.append(member.id)
-    xp.append(0)
-    membercount += 1
-    time.sleep(.1)
-    timestamps.append(str(round(time.time()))) 
+    client.leaderboard[member.id] = {xp: 0, time: round(time.time())}
     await syncboards()
 
 
@@ -190,27 +174,29 @@ async def initleaderboard(ctx, debug="chicken_nuggets"):
 
 
 async def syncboards():
-    global leaderboard
-    global timestamps
-    global xp
-    file = open("board.txt", 'w+') 
-    file.truncate(0) # overwrite file
-    for i in range(len(leaderboard)):
+    with open("board.txt", 'w') as f:
+        f.write(
+            '\n'.join(
+                [str(x) for x in client.leaderboard.keys()]
+            )
+        )
+        f.write('\n')
 
-        file.write(str(leaderboard[i]) + "\n")
-    file.close()
+    with open("xp.txt", 'w') as f:
+        f.write(
+            '\n'.join(
+                [str(x['xp']) for x in client.leaderboard.values()]
+            )
+        )
+        f.write('\n')
 
-    file = open("xp.txt", 'w+') 
-    file.truncate(0) # overwrite file
-    for i in range(len(xp)):
-         file.write(str(xp[i]) + "\n")
-    file.close()
-
-    file = open("time.txt", 'w+') 
-    file.truncate(0) # overwrite file
-    for i in range(len(timestamps)):
-         file.write(str(timestamps[i]) + "\n")
-    file.close()
+    with open("time.txt", 'w') as f:
+        f.write(
+            '\n'.join(
+                [str(x['time']) for x in client.leaderboard.values()]
+            )
+        )
+        f.write('\n')
 
 
 
