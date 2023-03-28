@@ -7,11 +7,11 @@ import random
 import time
 from string import digits
 digits = frozenset(digits) # we don't need to change digits, and this should make things ever-so-slightly faster
-owners = [401849772157435905, 876488885419520020] # Owner account IDs
 bottoken = open("token.txt","r").readline()
 membercount=0
 totalmessages=0 # total number of messages since bot turned on
 import httplist
+import glob
 
 class TimeoutException(Exception):   # Custom exception class
     print("bot timed out")
@@ -30,37 +30,30 @@ signal.signal(signal.SIGALRM, timeout_handler)
 class SurvivBot(commands.Bot):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.leaderboard = {}
-        self.leaderboard_loaded = False
     
     async def setup_hook(self):
-        print('Loading XP data')
-        with open('board.txt') as f:
-            leaderboard = [int(i.strip()) for i in f.read().splitlines()]
-        with open('xp.txt') as f:
-            xp = [int(i.strip()) for i in f.read().splitlines()]
-        with open('time.txt') as f:
-            timestamps = [int(i.strip()) for i in f.read().splitlines()]
-        assert len(leaderboard) == len(xp) == len(timestamps)
-        for i in range(len(leaderboard)):
-            self.leaderboard[leaderboard[i]] = {xp: xp[i], time: timestamps[i]}
-        self.leaderboard_loaded = True
+        for extension in glob.iglob(f'extensions{os.sep}*{os.extsep}py'):
+            extension = extension.replace(os.sep, '.')[:-len(os.extsep) - 2]
+            try:
+                await self.load_extension(extension)
+                self.logger.info(f'Loaded extension {extension}')
+            except Exception as e:
+                self.logger.info(f'Failed to load extension {extension}')
+        
 
 intents = discord.Intents.default()
 intents.members = True
 
-client = SurvivBot(command_prefix='$', intents=intents, help_command=None)
+client = SurvivBot(
+    command_prefix='$',
+    intents=intents,
+    help_command=None,
+    owner_ids=[401849772157435905, 876488885419520020]
+)
 
 # https://discord.com/api/oauth2/authorize?client_id=1079242361491693658&permissions=8&scope=applications.commands%20bot
 
-@client.command()
-async def explain(ctx):
-    embed = discord.Embed(title="Explanation of This:tm:", description="", color=0xFF0000)
-    embed.add_field(name="What is this server?", value="This Discord Server is the community area for Surviv Reloaded, open-source server for the defunct online game surviv.io.")
-    embed.add_field(name="What is this bot?", value="This bot was made by Killaship to save the hassle of explaining what this is to everyone.")
-    embed.add_field(name="What is Surviv Reloaded?", value="It's an open-source server hosting the original client. In other words, it's the original surviv.io, just hosted by a different server. It's not a clone of Surviv.io.")
-    embed.add_field(name="Where can I get more info?", value="https://github.com/SurvivReloaded")
-    await ctx.send(embed=embed)#sends the embed.
+
 
 @client.event
 async def on_ready():
@@ -72,11 +65,13 @@ async def on_ready():
     print(client.user.id)
     print('========')
 
-
 @client.event
-async def on_member_join(member):
-    client.leaderboard[member.id] = {xp: 0, time: round(time.time())}
-    await syncboards()
+async def on_command_error(ctx, error):
+    if isinstance(error, commands.CheckFailure):
+        await ctx.reply('You can\'t do that here.')
+    else:
+        await ctx.reply('An unknown error occurred.')
+        print(error)
 
 
 @client.command()
@@ -90,15 +85,7 @@ async def shell(ctx,cmd):
     else:
         await ctx.send("hey, wait a minute, you're not the owner! you can't do that! >:(")
         
-@client.command()
-async def awardxp(ctx,user,amount):
-    if(ctx.message.author.id in owners):
-        index = leaderboard.index(int(user))
-        xp[index] += int(amount)
-        await syncboards()
-        await ctx.send("<@{id}> has been awarded {xp} XP!".format(id=user,xp=amount))
-    else:
-        await ctx.send("hey, wait a minute, you're not the owner! you can't do that! >:(")
+
     
     
   
@@ -173,30 +160,7 @@ async def initleaderboard(ctx, debug="chicken_nuggets"):
         return
 
 
-async def syncboards():
-    with open("board.txt", 'w') as f:
-        f.write(
-            '\n'.join(
-                [str(x) for x in client.leaderboard.keys()]
-            )
-        )
-        f.write('\n')
 
-    with open("xp.txt", 'w') as f:
-        f.write(
-            '\n'.join(
-                [str(x['xp']) for x in client.leaderboard.values()]
-            )
-        )
-        f.write('\n')
-
-    with open("time.txt", 'w') as f:
-        f.write(
-            '\n'.join(
-                [str(x['time']) for x in client.leaderboard.values()]
-            )
-        )
-        f.write('\n')
 
 
 
