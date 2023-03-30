@@ -2,6 +2,8 @@ import discord
 from discord.ext import commands
 import aiofiles
 import asyncio
+import random
+import time
 
 class xp(commands.Cog):
     def __init__(self, bot):

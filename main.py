@@ -3,13 +3,10 @@ from discord.ext import commands, tasks
 import os
 import requests
 import signal
-import random
 import time
-from string import digits
-digits = frozenset(digits) # we don't need to change digits, and this should make things ever-so-slightly faster
+# from string import digits
+# digits = frozenset(digits) # we don't need to change digits, and this should make things ever-so-slightly faster
 bottoken = open("token.txt","r").readline()
-membercount=0
-totalmessages=0 # total number of messages since bot turned on
 import httplist
 import glob
 
