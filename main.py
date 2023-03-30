@@ -33,9 +33,9 @@ class SurvivBot(commands.Bot):
             extension = extension.replace(os.sep, '.')[:-len(os.extsep) - 2]
             try:
                 await self.load_extension(extension)
-                self.logger.info(f'Loaded extension {extension}')
+                print(f'Loaded extension {extension}')
             except Exception as e:
-                self.logger.info(f'Failed to load extension {extension}')
+                print(f'Failed to load extension {extension}')
         
 
 intents = discord.Intents.default()
