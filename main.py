@@ -102,126 +102,72 @@ async def links(ctx):
     await ctx.send(embed=embed)
 
 
+# Killaship told me that this command is deprecated.
+# @client.command()
+# async def initleaderboard(ctx, debug="chicken_nuggets"):
+#     global leaderboardfailsafe
+#     if(leaderboardfailsafe != 0):
+#         await ctx.send("Leaderboard failsafe value = {val}. It should equal zero. This means that the leaderboard is still in progress of initalizing. Wait until it's done!".format(val=leaderboardfailsafe))
+#         return
+#     leaderboardfailsafe = 1
+#     if(ctx.message.author.id in owners):
+#         global leaderboard
+#         global xp
+#         global timestamps
 
-@client.command()
-async def initleaderboard(ctx, debug="chicken_nuggets"):
-    global leaderboardfailsafe
-    if(leaderboardfailsafe != 0):
-        await ctx.send("Leaderboard failsafe value = {val}. It should equal zero. This means that the leaderboard is still in progress of initalizing. Wait until it's done!".format(val=leaderboardfailsafe))
-        return
-    leaderboardfailsafe = 1
-    if(ctx.message.author.id in owners):
-        global leaderboard
-        global xp
-        global timestamps
+#         await ctx.send("Initializing leaderboard, this may take a while, especially if dumping IDs is enabled!")
+#         time.sleep(0.5)
+#         await ctx.send("Counting Members     {timestamp}".format(timestamp=round(time.time())))
+#         global membercount
+#         members = ctx.message.guild.members
+#         i = 0
+#         for member in members:
+#             i += 1
+#             if(debug == "dump"):
+#                 await ctx.send("{id}    ({count}  {timestamp})".format(id=member.id, count=str(i), timestamp=round(time.time())))
+#             leaderboard.append(member.id)
+#             xp.append(0)
+#             time.sleep(.1)
+#         i = 0
+#         await ctx.send("Member counting finished")
+#         for member in members:
+#             timestamps.append(str(round(time.time())))
+#         file = open("board.txt", 'w+') 
+#         file.truncate(0) # overwrite file
+#         for i in range(len(leaderboard)):
+#             file.write(str(leaderboard[i]) + "\n")
+#         file.close()
+#         await ctx.send("Leaderboard exported to board.txt")
 
-        await ctx.send("Initializing leaderboard, this may take a while, especially if dumping IDs is enabled!")
-        time.sleep(0.5)
-        await ctx.send("Counting Members     {timestamp}".format(timestamp=round(time.time())))
-        global membercount
-        members = ctx.message.guild.members
-        i = 0
-        for member in members:
-            i += 1
-            if(debug == "dump"):
-                await ctx.send("{id}    ({count}  {timestamp})".format(id=member.id, count=str(i), timestamp=round(time.time())))
-            leaderboard.append(member.id)
-            xp.append(0)
-            time.sleep(.1)
-        i = 0
-        await ctx.send("Member counting finished")
-        for member in members:
-            timestamps.append(str(round(time.time())))
-        file = open("board.txt", 'w+') 
-        file.truncate(0) # overwrite file
-        for i in range(len(leaderboard)):
-            file.write(str(leaderboard[i]) + "\n")
-        file.close()
-        await ctx.send("Leaderboard exported to board.txt")
+#         file = open("xp.txt", 'w+') 
+#         file.truncate(0) # overwrite file
+#         for i in range(len(xp)):
+#             file.write(str(xp[i]) + "\n")
+#         file.close()
+#         await ctx.send("XP counts exported to xp.txt")
 
-        file = open("xp.txt", 'w+') 
-        file.truncate(0) # overwrite file
-        for i in range(len(xp)):
-            file.write(str(xp[i]) + "\n")
-        file.close()
-        await ctx.send("XP counts exported to xp.txt")
-
-        file = open("time.txt", 'w+') 
-        file.truncate(0) # overwrite file
-        for i in range(len(timestamps)):
-            file.write(str(timestamps[i]) + "\n")
-        file.close()
-        await ctx.send("Timestamps set in time.txt")
-        await ctx.send("Leaderboard Initialized! ({timestamp})".format(timestamp=round(time.time())))
-        leaderboardfailsafe = 0
-    else:
-        await ctx.send("hey, wait a minute, you're not the owner! you can't do that! >:(")
-        leaderboardfailsafe = 0
-        return
-
-
+#         file = open("time.txt", 'w+') 
+#         file.truncate(0) # overwrite file
+#         for i in range(len(timestamps)):
+#             file.write(str(timestamps[i]) + "\n")
+#         file.close()
+#         await ctx.send("Timestamps set in time.txt")
+#         await ctx.send("Leaderboard Initialized! ({timestamp})".format(timestamp=round(time.time())))
+#         leaderboardfailsafe = 0
+#     else:
+#         await ctx.send("hey, wait a minute, you're not the owner! you can't do that! >:(")
+#         leaderboardfailsafe = 0
+#         return
 
 
 
 
-@client.event
-async def on_message(message):
-    try:
-        id = message.author.id
-        global totalmessages
-        incXP = random.randrange(5, 10)
-        totalmessages += 1
-    
-        if id in leaderboard: # If the ID is on the leaderboard...
 
-            index = leaderboard.index(id) # Find where the ID is on the leaderboard
-            if(round(time.time()) - timestamps[index] >= 30): # 30 second delay
-                xp[index] += incXP # Increment corresponding xp by between 5 and 10 points
-                #print("old timestamp: {time}".format(time=round(time.time())))
-                timestamps[index] = round(time.time())
-                #print("new timestamp: {time}".format(time=round(time.time())))
-                #print("User ID {userid} gained {xpamount}".format(userid=id,xpamount=incXP))
-        else: # If user ID isn't in message
-            print("User ID {userid} is not on leaderboard. Run $initleaderboard again?".format(userid=id))
-            #print("Note: $initleaderboard resets leaderboard, spams, takes a long time.") 
-        await syncboards()
-        await client.process_commands(message) # Lets bot process other commands after event is done
-    except:
-        print("failed to award xp for user {user}".format(user=id))
-        await client.process_commands(message) # Lets bot process other commands after event is done       
+
     
 
 
-@client.command()
-async def getxp(ctx,user="0"): 
-    global leaderboard
-    global xp
-    checkuserid = "0"
-    if user == "0":
-        checkuserid = str(ctx.message.author.id)
-    else:
-        checkuserid = str(''.join(c for c in user if c.isdigit()))
-    if int(checkuserid.strip()) in leaderboard: # If the ID is on the leaderboard...
-        index = leaderboard.index(int(checkuserid.strip())) # Find where the ID is on the leaderboard
-        await ctx.send("<@{id}> has {xp} XP!".format(id=int(checkuserid.strip()),xp=xp[index])) 
-    else:
-        await ctx.send("Error! <@{userid}> is not on the leaderboard. :/".format(userid=checkuserid.strip()))
 
-@client.command()
-async def getleaderboard(ctx):
-    global leaderboard
-    global xp
-    text = []
-    indices = sorted(range(len(xp)), key=xp.__getitem__, reverse=True) # black magic fuckery
-    
-    for i in range(6):
-        user = await client.fetch_user(leaderboard[indices[i]])
-        #await ctx.send("#{row}: {user} has {pts} points!".format(row=i+1, user=user, pts=xp[indices[i]]))
-        text.append("#{row}: {user} has {pts} points!\n".format(row=i+1, user=user, pts=xp[indices[i]]))
-    #print(''.join(text))
-    
-    embed = discord.Embed(title=''.join(text), description="Top 6 XP counts!", color=0xFF0000)
-    await ctx.send(embed=embed)
 
 
 @client.command()
