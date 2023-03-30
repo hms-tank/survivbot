@@ -44,6 +44,39 @@ class Explain(commands.Cog):
             value="https://github.com/SurvivReloaded"
         )
         await ctx.send(embed=embed)
+    
+    @commands.command()
+    async def links(self, ctx):
+        embed = discord.Embed(title="Links", color=0xFF0000)
+        embed.add_field(
+            name="Test Server",
+            value="https://test.resurviv.io"
+        )
+        embed.add_field(
+            name="Play Stable Version",
+            value="https://resurviv.io"
+        )
+        embed.add_field(
+            name="Subreddit",
+            value="https://reddit.com/r/survivreloaded"
+        )
+        embed.add_field(
+            name="Discord Perma Invite",
+            value="https://discord.resurviv.io"
+        )
+        embed.add_field(
+            name="Github (Organization)",
+            value="https://github.com/SurvivReloaded"
+        )
+        embed.add_field(
+            name="GitLab (deprecated)",
+            value="https://gitlab.com/hasanger/survivreloaded"
+        )
+        embed.add_field(
+            name="Bot GitHub",
+            value="https://github.com/Killaship/survivbot"
+        )
+        await ctx.send(embed=embed)
 
 async def setup(bot):
     await bot.add_cog(Explain(bot))
