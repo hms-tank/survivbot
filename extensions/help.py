@@ -6,7 +6,7 @@ class Help(commands.Cog):
         self.bot = bot
     
     @client.command()
-    async def help(ctx):
+    async def help(self, ctx):
         embed = discord.Embed(title="help", color=0xFF0000)
         embed.add_field(
             name="$explain",
