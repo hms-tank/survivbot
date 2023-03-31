@@ -4,7 +4,6 @@ import os
 import time
 # from string import digits
 # digits = frozenset(digits) # we don't need to change digits, and this should make things ever-so-slightly faster
-bottoken = open("token.txt","r").readline()
 import glob
 
 
@@ -164,5 +163,7 @@ async def ownersonly(ctx):
     exit()
         
         
-#runs the bot token.
-client.run(bottoken.strip())
+if __name__ == '__main__':
+    with open("token.txt") as f:
+        token = f.readline().strip()
+    client.run(token)
