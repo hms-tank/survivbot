@@ -1,23 +1,11 @@
 import discord
-from discord.ext import commands, tasks
+from discord.ext import commands
 import os
-import requests
-import signal
 import time
 # from string import digits
 # digits = frozenset(digits) # we don't need to change digits, and this should make things ever-so-slightly faster
 bottoken = open("token.txt","r").readline()
-import httplist
 import glob
-
-class TimeoutException(Exception):   # Custom exception class
-    print("bot timed out")
-
-def timeout_handler(signum, frame):   # Custom signal handler (this is where OSdev IDT knowledge is relatable :p)
-    raise TimeoutException
-
-# Change the behavior of SIGALRM to call the timeout handler
-signal.signal(signal.SIGALRM, timeout_handler)
 
 
 
@@ -160,13 +148,7 @@ async def shell(ctx,cmd):
 
 
 
-@client.command()
-async def checkurl(ctx,site):
-    code = urlcheck(site)
-    if(code != 200):
-        await ctx.send("The server is currently down or unresponsive. The HTTP code sent was: {http}. ({phrase})".format(http=str(code), phrase=httplist[code]))
-    else:
-        await ctx.send("The server is currently up. (It sent a response code of 200 OK)")
+
 
 @client.command()
 async def resetbot(ctx):
@@ -184,15 +166,6 @@ async def ownersonly(ctx):
     else:
         await ctx.send("You're not the owner of this application.")         
         
-        
-def urlcheck(url):
-    signal.alarm(TIMEOUT)    
-    try:
-        r = requests.head(url, timeout=3)
-        return r.status_code
-    except TimeoutException:
-        return 999
-        signal.alarm(0)
         
 #runs the bot token.
 client.run(bottoken.strip())
