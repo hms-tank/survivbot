@@ -111,9 +111,9 @@ class InternetStuff(commands.Cog):
             except httpx.TimeoutException:
                 return (999, responses[999])
         return (
-            r.status_code,
+            r.status_code if r.status_code else None,
             responses.get(
-                r.status_code,
+                r.status_code if r.status_code else None,
                 'Web Server Returned an Unknown Error'
             )
         )
