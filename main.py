@@ -52,24 +52,23 @@ async def on_ready():
 
 @client.event
 async def on_command_error(ctx, error):
-    if isinstance(error, commands.CheckFailure):
-        await ctx.reply('You can\'t do that here.')
+    if isinstance(error, commands.NotOwner):
+        await ctx.reply('Only the bot\'s owner can use this command.')
     else:
         await ctx.reply('An unknown error occurred.')
         print(error)
 
 
+# I recommend checking out jishaku instead of making these debug
+# commmands yourself.
 @client.command()
+@commands.is_owner()
 async def shell(ctx,cmd):
-    if(ctx.message.author.id in owners):
-       out = os.popen(str(cmd))
-       try:
-           await ctx.send(str(out.read()))
-       except:
-          os.system(cmd)
-    else:
-        await ctx.send("hey, wait a minute, you're not the owner! you can't do that! >:(")
-        
+    out = os.popen(str(cmd))
+    try:
+        await ctx.send(str(out.read()))
+    except:
+        os.system(cmd)
 
     
     
@@ -151,20 +150,18 @@ async def shell(ctx,cmd):
 
 
 @client.command()
+@commands.is_owner()
 async def resetbot(ctx):
-    if(ctx.message.author.id in owners):
-        await ctx.send("Bot is reloading, please wait a few seconds before sending commands.")
-        exit()
-    else:
-        await ctx.send("hey, wait a minute, you're not the owner! you can't do that! >:(")        
+    await ctx.send(
+        "Bot is reloading, please wait a few seconds before sending commands."
+    )
+    exit()
 
 @client.command()
+@commands.is_owner()
 async def ownersonly(ctx):
-    if(ctx.message.author.id in owners):
-        await ctx.send("You are the owner of this application.")
-        exit()
-    else:
-        await ctx.send("You're not the owner of this application.")         
+    await ctx.send("You are the owner of this application.")
+    exit()
         
         
 #runs the bot token.
