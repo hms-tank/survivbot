@@ -91,11 +91,11 @@ class xp(commands.Cog):
                 (
                     f'#{i+1}: {await client.fetch_user(user_id)} has '
                     f'{self.leaderboard[user_id]["xp"]} points!'
-                ) for i, user_id in (enumerate(sorted(
+                ) for i, user_id in tuple(enumerate(sorted(
                     self.leaderboard.keys(),
                     key=lambda x: self.leaderboard[x]['xp'],
                     reverse=True
-                ))[:6])
+                )))[:6]
             ]),
             description='Top 6 XP counts!',
             color=0xFF0000
